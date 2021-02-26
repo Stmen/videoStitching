@@ -8,13 +8,15 @@ class Stitcher:
         # determine if we are using OpenCV v3.X
         self.isv3 = imutils.is_cv3()
 
-    def stitch(self, images, ratio=0.75, reprojThresh=2,
+    def stitch(self, image_left,image_right, ratio=0.75, reprojThresh=4.0,
         showMatches=False):
+
         # unpack the images, then detect keypoints and extract
         # local invariant descriptors from them
-        (imageB, imageA) = images
-        (kpsA, featuresA) = self.detectAndDescribe(imageA,"bgr")
-        (kpsB, featuresB) = self.detectAndDescribe(imageB,"bgr")
+        imageB = image_left
+        imageA = image_right
+        (kpsA, featuresA) = self.detectAndDescribe(imageA)
+        (kpsB, featuresB) = self.detectAndDescribe(imageB)
 
         # match features between the two images
         M = self.matchKeypoints(kpsA, kpsB,
@@ -44,41 +46,37 @@ class Stitcher:
         # return the stitched image
         return result
 
-   def detectAndDescribe(self,image,mode) :
+    def detectAndDescribe(self, image):
         # convert the image to grayscale
-        if mode == "gray":
-            gray = image
-        elif mode == "bgr":
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+        #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = image
         # check to see if we are using OpenCV 3.X
         if self.isv3:
             # detect and extract features from the image
-            descriptor = cv2.SIFT_create()
+            descriptor = cv2.ORB_create()
             (kps, features) = descriptor.detectAndCompute(image, None)
 
         # otherwise, we are using OpenCV 2.4.X
         else:
             # detect keypoints in the image
-            detecter  = cv2.SIFT_create()
-            kps = detecter.detect(gray)
+            detector  = cv2.SIFT_create()
+            kps = detector.detect(gray)
 
             # extract features from the image
             #extractor = cv2.DescriptorExtractor_create("SIFT")
-            (kps, features) = detecter.compute(gray,kps)
+            (kps, features) = detector.compute(gray, kps)
 
         # convert the keypoints from KeyPoint objects to NumPy
         # arrays
-        #kps = np.float32([kp.pt for kp in kps])
+        kps = np.float32([kp.pt for kp in kps])
 
         # return a tuple of keypoints and features
-        return kps, features
+        return (kps, features)
 
     def matchKeypoints(self, kpsA, kpsB, featuresA, featuresB,
         ratio, reprojThresh):
         # compute the raw matches and initialize the list of actual
         # matches
-
         matcher = cv2.DescriptorMatcher_create("BruteForce")
         rawMatches = matcher.knnMatch(featuresA, featuresB, 2)
         matches = []
@@ -93,11 +91,8 @@ class Stitcher:
         # computing a homography requires at least 4 matches
         if len(matches) > 4:
             # construct the two sets of points
-            #ptsA = np.float32([kpsA[i] for (_, i) in matches])
-            #ptsB = np.float32([kpsB[i] for (i, _) in matches])
-
-            ptsA = [kpsA[i] for (_, i) in matches]
-            ptsB = [kpsB[i] for (i, _) in matches]
+            ptsA = np.float32([kpsA[i] for (_, i) in matches])
+            ptsB = np.float32([kpsB[i] for (i, _) in matches])
 
             # compute the homography between the two sets of points
             (H, status) = cv2.findHomography(ptsA, ptsB, cv2.RANSAC,
@@ -117,6 +112,9 @@ class Stitcher:
         vis = np.zeros((max(hA, hB), wA + wB, 3), dtype="uint8")
         vis[0:hA, 0:wA] = imageA
         vis[0:hB, wA:] = imageB
+
+        vis[0:hA, 0:wA] = imageA
+        vis[0:hB, wA:]  = imageB
 
         # loop over the matches
         for ((trainIdx, queryIdx), s) in zip(matches, status):
