@@ -1,0 +1,2 @@
+../data/football/Right_0001.jpg
+../data/football/Left_0001.jpg
