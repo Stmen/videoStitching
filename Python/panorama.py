@@ -59,6 +59,8 @@ class Stitcher:
         # otherwise, we are using OpenCV 2.4.X
         else:
             # detect keypoints in the image
+
+            #detector  = cv2.ORB_create()
             detector  = cv2.SIFT_create()
             kps = detector.detect(gray)
 

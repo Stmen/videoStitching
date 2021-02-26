@@ -121,10 +121,33 @@ def test6():
     result = stitcher.stitch(fingerpoint1,fingerpoint2)
     cv2.imwrite(data_dir_fingerpoint + "/../test/stitch.png",result)
     result = stitcher.stitch(football_left,football2_right)
-    cv2.imwrite(data_dir_fingerpoint + "/football/stitch.png",result)
+    cv2.imwrite(data_dir_fingerpoint + "/../football/stitch.png",result)
+
+def test7():
+        football_left = get_football_img_uint8(data_dir_football + "/Left_0001.jpg")
+        football2_right = get_football_img_uint8(data_dir_football + "/Right_0001.jpg")
+        fingerpoint1 = get_football_img_uint8(data_dir_fingerpoint + "/../test/test3.jpg")
+        fingerpoint2 = get_football_img_uint8(data_dir_fingerpoint + "/../test/test4.jpg")
+        result = changeImage(fingerpoint1,fingerpoint2)
+
+        cv2.imwrite(data_dir_fingerpoint + "/../test/stitch_2.png", result)
+def test_opencv_stitch():
+    fingerpoint1 = get_football_img_uint8(data_dir_fingerpoint + "/../test/test1.jpg")
+    fingerpoint2 = get_football_img_uint8(data_dir_fingerpoint + "/../test/test2.jpg")
+    football_left = get_football_img_uint8(data_dir_football + "/Left_0001.jpg")
+    football2_right = get_football_img_uint8(data_dir_football + "/Right_0001.jpg")
+    Stitcher = cv2.Stitcher_create(cv2.Stitcher_PANORAMA)
+
+    status, pano = Stitcher.stitch([fingerpoint1,fingerpoint2])
+
+    cv2.imwrite(data_dir_fingerpoint + "/../test/stitch_3.png", pano)
+
+    status, pano = Stitcher.stitch([football_left, football2_right])
+    print(status)
+    cv2.imwrite(data_dir_fingerpoint + "/../football/stitch_2.png",pano)
 def main( args):
     print(cv2.__version__)
-    test6()
+    test_opencv_stitch()
 
 
 if __name__ == "__main__" :
