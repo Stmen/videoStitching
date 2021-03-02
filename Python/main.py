@@ -4,6 +4,8 @@ import os
 import sys
 from  panorama import Stitcher
 from fingerpoint_image_align import fingerpoint_image_align
+from fingerpoint_image_align import fingerpoint_image_align_self
+
 #work_dir = os.getcwd()
 base_dir = ".."
 data_dir = base_dir + "/data"
@@ -147,16 +149,19 @@ def test_opencv_stitch():
     cv2.imwrite(data_dir_fingerpoint + "/../football/stitch_2.png",pano)
 
 def test_fingerpoint_image_align():
-    fingerpoint1 = get_finger_img_uint8(data_dir_fingerpoint + "/fingerpoint19.debase","nor")
-    fingerpoint2 = get_finger_img_uint8(data_dir_fingerpoint + "/fingerpoint18.debase","nor")
-    img = fingerpoint_image_align(fingerpoint1,fingerpoint2)
-    #if img != None:
-    image = np.concatenate([fingerpoint1, img], axis=1)
-    cv2.imwrite(data_dir_fingerpoint + "/../fingerpoint/image_align_2.png", image)
+    fingerpoint1 = get_finger_img_uint8(data_dir_fingerpoint + "/fingerpoint18.debase","nor")
+    fingerpoint2 = get_finger_img_uint8(data_dir_fingerpoint + "/fingerpoint19.debase","nor")
+    r = fingerpoint_image_align_self(fingerpoint1,fingerpoint2)
+    if r != False:
+        img_concat,img_matches,img_align = r
+        cv2.imwrite(data_dir_fingerpoint + "/../fingerpoint/img_concat.png", img_concat)
+        cv2.imwrite(data_dir_fingerpoint + "/../fingerpoint/img_matches.png", img_matches)
+        cv2.imwrite(data_dir_fingerpoint + "/../fingerpoint/img_align.png", img_align)
 
 def main( args):
     print(cv2.__version__)
     test_fingerpoint_image_align()
+
 
 
 if __name__ == "__main__" :
